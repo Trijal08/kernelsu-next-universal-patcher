@@ -294,6 +294,8 @@ jobs:
                 fi
             fi
 
+            echo 'CONFIG_LOCALVERSION_AUTO=n' >> out/.config
+            sed -i '/res="$res${scm:++}"/d' scripts/setlocalversion
             echo 'CONFIG_KSU_KPROBES_HOOK=n' >> out/.config
 
         - name: 'Build kernel'
