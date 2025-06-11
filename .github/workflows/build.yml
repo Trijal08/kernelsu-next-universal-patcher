@@ -36,6 +36,8 @@ on:
                 options:
                     - 'Clang/LLVM'
                     - 'GCC/Binutils'
+                    - 'Clang/Binutils'
+                    - 'GCC/LLVM'
             KERNEL_COMPILER_TOOLCHAIN:
                 description: 'Direct link to custom compiler prebuilt toolchain (leave blank if not required):'
                 required: false
@@ -294,6 +296,34 @@ jobs:
                 fi
             fi
 
+            if [ ${{ github.event.inputs.KERNEL_COMPILER }} == 'Clang/Binutils' ]; then
+                if [ ! -z ${{ github.event.inputs.KERNEL_COMPILER_TOOLCHAIN }} ]; then
+                    if [ ${{ github.event.inputs.KERNEL_ARCH }} == 'arm' ]; then
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }}clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf- CROSS_COMPILE=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }} -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                    else
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }}clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu- CROSS_COMPILE=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }} -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                    fi
+                else
+                    if [ ${{ github.event.inputs.KERNEL_ARCH }} == 'arm' ]; then
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf- CROSS_COMPILE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf- -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                    else
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu- CROSS_COMPILE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu- -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                    fi
+                fi
+            fi
+
+            if [ ${{ github.event.inputs.KERNEL_COMPILER }} == 'GCC/LLVM' ]; then
+                if [ ! -z ${{ github.event.inputs.KERNEL_COMPILER_TOOLCHAIN }} ]; then
+                    make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }}gcc LLVM=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }} LLVM_IAS=1 -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                else
+                    if [ ${{ github.event.inputs.KERNEL_ARCH }} == 'arm' ]; then
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf-gcc LLVM=$(realpath ~/**/LLVM-*-Linux-X64/bin)/ LLVM_IAS=1 -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                    else
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu-gcc LLVM=$(realpath ~/**/LLVM-*-Linux-X64/bin)/ LLVM_IAS=1 -j$(nproc --all) O=out ${{ github.event.inputs.KERNEL_CONFIGS }}
+                    fi
+                fi
+            fi
+
             echo 'CONFIG_LOCALVERSION_AUTO=n' >> out/.config
             sed -i '/res="$res${scm:++}"/d' scripts/setlocalversion
             echo 'CONFIG_KSU_KPROBES_HOOK=n' >> out/.config
@@ -321,6 +351,35 @@ jobs:
                     fi
                 fi
             fi
+
+            if [ ${{ github.event.inputs.KERNEL_COMPILER }} == 'Clang/Binutils' ]; then
+                if [ ! -z ${{ github.event.inputs.KERNEL_COMPILER_TOOLCHAIN }} ]; then
+                    if [ ${{ github.event.inputs.KERNEL_ARCH }} == 'arm' ]; then
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }}clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf- CROSS_COMPILE=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }} -j$(nproc --all) O=out
+                    else
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }}clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu- CROSS_COMPILE=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }} -j$(nproc --all) O=out
+                    fi
+                else
+                    if [ ${{ github.event.inputs.KERNEL_ARCH }} == 'arm' ]; then
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf- CROSS_COMPILE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf- -j$(nproc --all) O=out
+                    else
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=clang CLANG_TRIPLE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu- CROSS_COMPILE=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu- -j$(nproc --all) O=out
+                    fi
+                fi
+            fi
+
+            if [ ${{ github.event.inputs.KERNEL_COMPILER }} == 'GCC/LLVM' ]; then
+                if [ ! -z ${{ github.event.inputs.KERNEL_COMPILER_TOOLCHAIN }} ]; then
+                    make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }}gcc LLVM=$(realpath ~/**/compiler-toolchain)/${{ github.event.inputs.KERNEL_COMPILER_PREFIX }} LLVM_IAS=1 -j$(nproc --all) O=out
+                else
+                    if [ ${{ github.event.inputs.KERNEL_ARCH }} == 'arm' ]; then
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-arm-none-linux-gnu*/bin)/arm-none-linux-gnueabihf-gcc LLVM=$(realpath ~/**/LLVM-*-Linux-X64/bin)/ LLVM_IAS=1 -j$(nproc --all) O=out
+                    else
+                        make ARCH=${{ github.event.inputs.KERNEL_ARCH }} CC=$(realpath ~/**/arm-gnu-toolchain-*-x86_64-aarch64-none-linux-gnu*/bin)/aarch64-none-linux-gnu-gcc LLVM=$(realpath ~/**/LLVM-*-Linux-X64/bin)/ LLVM_IAS=1 -j$(nproc --all) O=out
+                    fi
+                fi
+            fi
+
         - name: 'Organize boot artifacts'
           working-directory: './kernel-src'
           run: |
