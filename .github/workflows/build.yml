@@ -275,6 +275,8 @@ jobs:
         - name: 'Generate the kernel .config file'
           working-directory: './kernel-src'
           run: |
+            shopt -s globstar
+
             # Generate kernel config using make
             if [ ${{ github.event.inputs.KERNEL_COMPILER }} == 'Clang/LLVM' ]; then
                 if [ ! -z ${{ github.event.inputs.KERNEL_COMPILER_TOOLCHAIN }} ]; then
@@ -331,6 +333,8 @@ jobs:
         - name: 'Build kernel'
           working-directory: './kernel-src'
           run: |
+            shopt -s globstar
+
             # Compile using make
             if [ ${{ github.event.inputs.KERNEL_COMPILER }} == 'Clang/LLVM' ]; then
                 if [ ! -z ${{ github.event.inputs.KERNEL_COMPILER_TOOLCHAIN }} ]; then
